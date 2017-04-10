@@ -1,0 +1,46 @@
+--Consulta 1
+SELECT title, categoryname FROM products, categories WHERE products.category = categories.category;
+
+--Consulta 2
+SELECT title, categoryname FROM products, categories WHERE products.category = categories.category AND categories.category = 1;
+
+--Consulta 3
+SELECT category, COUNT (title) FROM products GROUP BY category ORDER BY category;
+
+--Consulta 4
+SELECT category, COUNT (title) FROM products GROUP BY category ORDER BY COUNT (title) DESC;
+
+--Consulta 5
+SELECT category, COUNT (title) FROM products GROUP BY category ORDER BY COUNT (title) DESC LIMIT 1;
+
+
+--Consulta 6
+SELECT gender, AVG( age ) promedio_edad FROM customers GROUP BY gender;
+
+--Consulta 7
+CREATE TABLE problema7 AS SELECT gender, AVG( age ) promedio_edad FROM customers GROUP BY gender;
+ALTER TABLE problema7 ALTER COLUMN gender TYPE varchar(25);
+UPDATE problema7 SET gender='Chicos' WHERE gender='M';
+UPDATE problema7 SET gender='Chicas' WHERE gender='F';
+
+--Consulta 8
+CREATE TABLE problema8 AS SELECT COUNT(*), firstname FROM customers GROUP BY firstname HAVING firstname LIKE '%V%';
+SELECT SUM( count ) total FROM problema8;
+
+--Consulta 9
+
+SELECT customerid, SUM ( quantity ) total FROM orders, orderlines WHERE orders.orderid = orderlines.orderid GROUP BY customerid ORDER BY total DESC LIMIT 5;
+
+--Consulta 10
+
+SELECT customerid, COUNT( prod_id ) cantidad FROM orders, orderlines WHERE orders.orderid = orderlines.orderid GROUP BY customerid ORDER BY cantidad DESC LIMIT 5;
+
+--Consulta 11
+
+SELECT state, AVG ( totalamount ) promedio FROM customers, orders WHERE customers.customerid = orders.customerid GROUP BY state ORDER BY promedio DESC LIMIT 1;
+
+--Consulta 12
+
+SELECT state, AVG ( totalamount ) promedio, stddev ( totalamount ) desviacion FROM customers, orders WHERE customers.customerid = orders.customerid GROUP BY state;
+
+
