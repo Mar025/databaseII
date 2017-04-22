@@ -1,0 +1,164 @@
+--Ejercicio 2
+
+--2. En la tabla notas realizar funciones de agregacion de plr que calculen lo siguiente:
+
+--minimo, maximo, primer cuartil, mediana, tercer cuartil, maximo y percentil 33 de los campos: nota_mate, nota_ingles, nota_fisica.
+
+--Minimo
+
+create or replace function r_min(_float8) returns float as '
+min(arg1)' language 'plr';
+
+CREATE AGGREGATE minimo (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_min
+);
+
+SELECT minimo(nota_mate) minMate,minimo(nota_ingles) minIngles,minimo(nota_fisica) minFisica FROM notas;
+
+--Maximo
+
+create or replace function r_max(_float8) returns float as '
+max(arg1)' language 'plr';
+
+CREATE AGGREGATE maximo (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_max
+);
+
+SELECT maximo(nota_mate) maxMate,maximo(nota_ingles) maxIngles,maximo(nota_fisica) maxFisicaFROM notas;
+
+--Primer Cuartil
+
+create or replace function r_quartile1(_float8) returns float as '
+quantile(arg1,probs=0.25)' language 'plr';
+
+CREATE AGGREGATE cuartil1 (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_quartile1
+);
+
+SELECT cuartil1(nota_mate) c1Mate,cuartil1(nota_ingles) c1Ingles,cuartil1(nota_fisica) c1Fisica FROM notas;
+
+--Mediana
+
+create or replace function r_median(_float8) returns float as '
+quantile(arg1,probs=0.5)' language 'plr';
+
+CREATE AGGREGATE mediana (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_median
+);
+
+SELECT mediana(nota_mate) medianMate, mediana(nota_ingles) medianIngles, mediana(nota_fisica) medianFisica FROM notas;
+
+--Tercer Cuartil
+
+create or replace function r_quartile3(_float8) returns float as '
+quantile(arg1,probs=0.75)' language 'plr';
+
+CREATE AGGREGATE cuartil3 (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_quartile3
+);
+
+SELECT cuartil3(nota_mate) c3Mate, cuartil3(nota_ingles) c3Ingles, cuartil3(nota_fisica) c3Fisica FROM notas;
+
+--Maximo
+
+create or replace function r_max(_float8) returns float as '
+max(arg1)' language 'plr';
+
+CREATE AGGREGATE maximo (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_max
+);
+
+SELECT maximo(nota_mate) maxMate, maximo(nota_ingles) maxIngles, maximo(nota_fisica) maxFisica FROM notas;
+
+--Percentil 33
+
+create or replace function r_percent33(_float8) returns float as '
+quantile(arg1,probs=0.33)' language 'plr';
+
+CREATE AGGREGATE percentil33 (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_percent33
+);
+
+SELECT percentil33(nota_mate) p33Mate, percentil33(nota_ingles) p33Ingles, percentil33(nota_fisica) p33Fisica FROM notas;
+
+--minimo, maximo, primer cuartil, mediana, tercer cuartil,   maximo y percentil 33 de los campos: nota_mate, nota_ingles, nota_fisica pero agrupados por seccion.
+
+--Minimo
+SELECT seccion, minimo(nota_mate) minMate, minimo(nota_ingles) minIngles, minimo(nota_fisica) minFisica FROM notas GROUP BY seccion;
+
+--Maximo
+SELECT seccion, maximo(nota_mate) maxMate, maximo(nota_ingles) maxIngles, maximo(nota_fisica) maxFisica FROM notas GROUP BY seccion;
+
+--Primer Cuartil
+SELECT seccion, cuartil1(nota_mate) c1Mate,cuartil1(nota_ingles) c1Ingles,cuartil1(nota_fisica) c1Fisica FROM notas GROUP BY seccion;
+
+--Mediana
+SELECT seccion, mediana(nota_mate) medianMate, mediana(nota_ingles) medianIngles, mediana(nota_fisica) medianFisica FROM notas GROUP BY seccion;
+
+--Tercer cuartil
+SELECT seccion, cuartil3(nota_mate) c3Mate, cuartil3(nota_ingles) c3Ingles, cuartil3(nota_fisica) c3Fisica FROM notas GROUP BY seccion;
+
+--Percentil 33
+SELECT seccion, percentil33(nota_mate) p33Mate, percentil33(nota_ingles) p33Ingles, percentil33(nota_fisica) p33Fisica FROM notas GROUP BY seccion;
+
+--Ejercicio 3
+--Funciones window
+--Realizar una funcion window que calcule el coeficiente de correlacion para cada uno de las distintas notas, es decir:
+--notas_mate con nota_ingles
+--notas_mate con nota_fisica
+--notas_ingles con nota_fisica
+
+CREATE OR REPLACE
+FUNCTION r_cor(float8, float8)
+RETURNS float8 AS
+$BODY$
+  x <- farg1
+  y <- farg2 
+  return(cor(x,y))
+$BODY$
+LANGUAGE plr WINDOW;
+
+SELECT r_cor(nota_mate,nota_ingles) OVER () FROM notas LIMIT 1;
+
+SELECT r_cor(nota_mate,nota_fisica) OVER () FROM notas LIMIT 1;
+
+SELECT r_cor(nota_ingles,nota_fisica) OVER () FROM notas LIMIT 1;
+
+
+--4. Realizar una funcion de agregacion en plr que calcule el p-valor para la prueba de hipotesis de Wilcoxon con un valor de mu=5 para las notas en mate, ingles y fisica. La función en R es wilcox.test.
+
+create or replace function r_pvalue_wilcox(_float8) returns float as '
+wilcox.test(arg1,mu=5)$p.value' language 'plr';
+
+CREATE AGGREGATE pvalor_wilcox (
+sfunc = plr_array_accum,
+basetype = float8,
+stype = _float8,
+finalfunc = r_pvalue_wilcox
+);
+
+SELECT pvalor_wilcox(nota_mate) pMate, pvalor_wilcox(nota_ingles) pIngles, pvalor_wilcox(nota_fisica) pFisica FROM notas;
+
+wilcox.test(x,mu=5)$p.value
+
